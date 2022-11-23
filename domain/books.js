@@ -10,7 +10,7 @@ export const createBook = data => {
   const { title, author } = data;
 
   if (!title) {
-    return { errMessage: 'Missing book author' };
+    return { errMessage: 'Missing book title' };
   }
 
   if (!author) {
