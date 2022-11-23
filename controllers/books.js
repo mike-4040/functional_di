@@ -1,3 +1,6 @@
+import { v4 as uuid } from 'uuid';
+
+import { saveBook } from '../providers/books.js';
 import { createBook } from '../domain/books.js';
 import { queryBooks, queryBookById } from '../providers/books.js';
 
@@ -22,10 +25,15 @@ export const getBook = async (req, res) => {
   res.json(book);
 };
 
+const createBookDependencies = {
+  uuid,
+  saveBook,
+}
+
 export const postBook = async (req, res) => {
   const { body } = req;
 
-  const { errMessage, id } = createBook(body);
+  const { errMessage, id } = createBook(body, createBookDependencies);
 
   if (errMessage) {
     res.status(400).json({ errMessage });

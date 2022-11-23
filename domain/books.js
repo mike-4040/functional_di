@@ -1,8 +1,5 @@
-import { v4 as uuid } from 'uuid';
-
-import { saveBook } from '../providers/books.js';
-
-export const createBook = data => {
+export const createBook = (data, dependencies) => {
+  const { uuid, saveBook } = dependencies;
   if (!data) {
     return { errMessage: 'Missing book data' };
   }

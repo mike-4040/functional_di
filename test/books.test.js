@@ -1,25 +1,21 @@
 import { expect } from 'chai';
-import mockery from 'mockery';
 import sinon from 'sinon';
-
-import * as booksProvider from '../providers/books.js';
 
 describe('domain/books', () => {
   let createBook;
   let saveBookStub;
   let uuidStub;
   let consoleErrorStub;
+  let dependencies;
 
   before(async () => {
-    saveBookStub = sinon.stub(booksProvider, 'saveBook');
-    consoleErrorStub = sinon.stub(console, 'error');
-
-    mockery.enable({
-      warnOnReplace: false,
-      warnOnUnregistered: false,
-    });
+    saveBookStub = sinon.stub();
     uuidStub = sinon.stub();
-    mockery.registerMock('uuid', { v4: uuidStub });
+    dependencies = {
+      saveBook: saveBookStub,
+      uuid: uuidStub,
+    };
+    consoleErrorStub = sinon.stub(console, 'error');
 
     ({ createBook } = await import('../domain/books.js'));
   });
@@ -31,23 +27,21 @@ describe('domain/books', () => {
 
   after(() => {
     sinon.restore();
-    mockery.disable();
-    mockery.deregisterAll();
   });
 
   describe('createBook', () => {
     it('should return an error message if no data is provided', () => {
-      const { errMessage } = createBook();
+      const { errMessage } = createBook(undefined, dependencies);
       expect(errMessage).to.equal('Missing book data');
     });
 
     it('should return an error message if no title is provided', () => {
-      const { errMessage } = createBook({ author: 'Jane Doe' });
+      const { errMessage } = createBook({ author: 'Jane Doe' }, dependencies);
       expect(errMessage).to.equal('Missing book title');
     });
 
     it('should return an error message if no author is provided', () => {
-      const { errMessage } = createBook({ title: 'My Book' });
+      const { errMessage } = createBook({ title: 'My Book' },   dependencies);
       expect(errMessage).to.equal('Missing book author');
     });
 
@@ -58,7 +52,7 @@ describe('domain/books', () => {
       const { errMessage } = createBook({
         title: 'My Book',
         author: 'Jane Doe',
-      });
+      }, dependencies);
       expect(consoleErrorStub.firstCall.firstArg.message).to.equal(message);
       expect(errMessage).to.equal('Internal server error');
     });
@@ -70,7 +64,7 @@ describe('domain/books', () => {
       const { id: bookId } = createBook({
         title: 'My Book',
         author: 'Jane Doe',
-      });
+      }, dependencies);
       expect(bookId).to.equal(id);
     });
   });
