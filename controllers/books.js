@@ -1,8 +1,8 @@
-import { v4 } from 'uuid';
-import { getBooks, queryBookById, createBook } from '../providers/books.js';
+import { createBook } from '../domain/books.js';
+import { queryBooks, queryBookById } from '../providers/books.js';
 
 export const getAllBooks = async (_req, res) => {
-  const books = getBooks();
+  const books = queryBooks();
   res.json(books);
 };
 
@@ -10,22 +10,26 @@ export const getBook = async (req, res) => {
   const { id } = req.params;
   if (!id) {
     res.status(400).json({ message: 'Missing book id' });
+    return;
   }
+
   const book = queryBookById(id);
   if (!book) {
     res.status(404).json({ message: 'Book not found' });
+    return;
   }
 
   res.json(book);
 };
 
 export const postBook = async (req, res) => {
-  const { title, author } = req.body;
-  if (!title || !author) {
-    res.status(400).json({ message: 'Missing book title or author' });
-  }
+  const { body } = req;
 
-  const id = v4();
-  createBook({ id, title, author });
+  const { errMessage, id } = createBook(body);
+
+  if (errMessage) {
+    res.status(400).json({ errMessage });
+    return;
+  }
   res.json({ id });
 };
